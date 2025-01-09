@@ -27,7 +27,9 @@ public interface OrderService {
 
 
     // update Order
-    OrderDto updateOrderStatus(Long id, String status, Long amount, String paymentDate);
+    OrderDto updateStatus(Long id, String status, Long amount, String paymentDate);
+
+
     void updateOrderStatus(Long orderId, String status) throws Exception;
 
 

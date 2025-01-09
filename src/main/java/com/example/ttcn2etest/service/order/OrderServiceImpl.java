@@ -2,9 +2,15 @@ package com.example.ttcn2etest.service.order;
 
 import com.example.ttcn2etest.controller.OrderController;
 import com.example.ttcn2etest.exception.MyCustomException;
+import com.example.ttcn2etest.model.dto.ClassDto;
 import com.example.ttcn2etest.model.dto.OrderDto;
+import com.example.ttcn2etest.model.etity.Class;
+import com.example.ttcn2etest.model.etity.ClassUser;
 import com.example.ttcn2etest.model.etity.Order;
+import com.example.ttcn2etest.repository.classUser.ClassUserRepository;
 import com.example.ttcn2etest.repository.order.OrderRepository;
+import com.example.ttcn2etest.service.classRoom.ClassRoomService;
+import com.example.ttcn2etest.service.classUser.ClassUserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -27,11 +33,15 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ModelMapper modelMapper;
+    private final ClassRoomService classRoomService;
+    private final ClassUserRepository userRepository;
     private final String uploadDir = "uploads/";
 
-    public OrderServiceImpl(OrderRepository orderRepository, ModelMapper modelMapper) {
+    public OrderServiceImpl(OrderRepository orderRepository, ModelMapper modelMapper, ClassRoomService classRoomService, ClassUserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.modelMapper = modelMapper;
+        this.classRoomService = classRoomService;
+        this.userRepository = userRepository;
     }
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
@@ -98,6 +108,12 @@ public class OrderServiceImpl implements OrderService {
         }else if ("VNPAY_PAYMENT".equals(paymentCode)) {
             paymentMethod = "VNPAY_PAYMENT";
             finalImagePath = "Không có"; // Nếu là thanh toán trực tiếp, không có hình ảnh
+            ClassDto classDto = classRoomService.getClassesByCourseId(orderDto.getServiceManagerId());
+            ClassUser classUser = ClassUser.builder()
+                    .idUser(orderDto.getUserId())
+                    .classId(classDto.getClassId())
+                    .build();
+            userRepository.save(classUser);
         } else {
             throw new IllegalArgumentException("Invalid payment method code: " + paymentCode);
         }
@@ -147,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDto updateOrderStatus(Long id, String status, Long amount, String paymentDate) {
+    public OrderDto updateStatus(Long id, String status, Long amount, String paymentDate) {
         Optional<Order> optionalOrder = orderRepository.findById(id);
         if (optionalOrder.isPresent()) {
             Order order = optionalOrder.get();
@@ -169,9 +185,16 @@ public class OrderServiceImpl implements OrderService {
         if (!status.equals("PAID") && !status.equals("FAILED")) {
             throw new Exception("Trạng thái không hợp lệ! Chỉ chấp nhận: PAID, FAILED");
         }
-
         if (!order.getStatus().equals("PENDING")) {
             throw new Exception("Chỉ có thể cập nhật trạng thái cho đơn hàng đang chờ xử lý (PENDING)");
+        }
+        if(status.equals("PAID")){
+            ClassDto classDto = classRoomService.getClassesByCourseId(order.getServiceManagerId());
+            ClassUser classUser = ClassUser.builder()
+                    .idUser(order.getUserId())
+                    .classId(classDto.getClassId())
+                    .build();
+            userRepository.save(classUser);
         }
 
         order.setStatus(status);

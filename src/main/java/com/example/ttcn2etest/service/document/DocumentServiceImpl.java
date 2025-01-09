@@ -59,6 +59,7 @@ public class DocumentServiceImpl implements DocumentService {
         try {
             Document document = Document.builder()
                     .name(request.getName())
+                    .idService(request.getIdService())
                     .content(request.getContent())
                     .file(request.getFile())
                     .image(request.getImage())
@@ -80,6 +81,7 @@ public class DocumentServiceImpl implements DocumentService {
         if (documentOptional.isPresent()) {
             Document document = documentOptional.get();
             document.setName(request.getName());
+            document.setIdService(request.getIdService());
             document.setContent(request.getContent());
             document.setFile(request.getFile());
             document.setImage(request.getImage());

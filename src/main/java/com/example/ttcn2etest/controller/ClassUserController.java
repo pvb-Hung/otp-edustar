@@ -5,6 +5,7 @@ import com.example.ttcn2etest.service.classUser.ClassUserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +33,12 @@ public class ClassUserController extends BaseController {
                     .body("Chi tiết lỗi: " + e.getMessage());
         }
     }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<ClassUserDto>> getClassesByUserId(@PathVariable("id") Long userId) {
+        List<ClassUserDto> classUserList = classUserService.getClassesByUserId(userId);
+        return ResponseEntity.ok(classUserList);
+    }
 
-    // API: Lấy thông tin lớp học theo ID lớp học
     @GetMapping("/{id}")
     ResponseEntity<?> getClassById(@PathVariable String id) {
         try {
@@ -58,7 +63,15 @@ public class ClassUserController extends BaseController {
                     .body("Không thể tạo lớp học. Chi tiết lỗi: " + e.getMessage());
         }
     }
-
+    // API: Update lớp học
+    @PutMapping("/{id}")
+    public ResponseEntity<ClassUserDto> updateClassUser(
+            @PathVariable Long id,
+            @RequestBody @Validated ClassUserDto classUserDto
+    ) {
+        ClassUserDto updatedClassUser = classUserService.updateClassUser(id, classUserDto);
+        return ResponseEntity.ok(updatedClassUser);
+    }
     // API: Xóa lớp học
     @DeleteMapping("/delete/{id}")
     ResponseEntity<?> deleteClass(@PathVariable Long id) {

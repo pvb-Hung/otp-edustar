@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassUserServiceImpl implements ClassUserService{
@@ -38,8 +39,16 @@ public class ClassUserServiceImpl implements ClassUserService{
         if (classUser.isPresent()) {
             return modelMapper.map(classUser.get(), ClassUserDto.class);
         }else{
-             throw new MyCustomException("ID của dịch vụ không tồn tại");
+            throw new MyCustomException("ID của dịch vụ không tồn tại");
         }
+    }
+
+    @Override
+    public List<ClassUserDto> getClassesByUserId(Long userId) {
+        List<ClassUser> classUsers = classUserRepository.findByIdUser(userId);
+        return classUsers.stream()
+                .map(classUser -> modelMapper.map(classUser, ClassUserDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -50,8 +59,25 @@ public class ClassUserServiceImpl implements ClassUserService{
     }
 
     @Override
-    public ClassUserDto updateClassUser(String id, ClassUserDto clasUserDto) {
-        return null;
+    public ClassUserDto updateClassUser(Long id, ClassUserDto classUserDto) {
+
+        // Tìm kiếm bản ghi trong database
+        Optional<ClassUser> existingClassUser = classUserRepository.findById(id);
+        if (existingClassUser.isEmpty()) {
+            throw new MyCustomException("ClassUser with id " + id + " not found");
+        }
+
+        // Cập nhật thông tin
+        ClassUser classUser = existingClassUser.get();
+        classUser.setClassId(classUserDto.getClassId());
+        classUser.setIdUser(classUserDto.getIdUser());
+
+        // Lưu lại bản ghi đã cập nhật
+        ClassUser updatedClassUser = classUserRepository.save(classUser);
+
+        // Trả về DTO
+        return modelMapper.map(updatedClassUser, ClassUserDto.class);
+
     }
 
 

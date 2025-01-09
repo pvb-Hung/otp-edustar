@@ -44,10 +44,10 @@ public class PaymentController {
         String orderId = request.getParameter("vnp_TxnRef");
         String frontendUrl; // URL frontend để điều hướng
         if ("00".equals(status)) { // Thanh toán thành công
-            orderService.updateOrderStatus(Long.parseLong(orderId), "PAID", null, null);
+            orderService.updateStatus(Long.parseLong(orderId), "PAID", null, null);
             frontendUrl = "http://localhost:3000/payment-success?orderId=" + orderId; // URL frontend khi thành công
         } else { // Thanh toán thất bại
-            orderService.updateOrderStatus(Long.parseLong(orderId), "FAILED", null, null);
+            orderService.updateStatus(Long.parseLong(orderId), "FAILED", null, null);
             frontendUrl = "http://localhost:3000/payment-failed?orderId=" + orderId; // URL frontend khi thất bại
         }
 

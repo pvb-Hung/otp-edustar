@@ -13,6 +13,7 @@ public class CreateDocumentRequest {
     @NotBlank(message = "Tên tài liệu không được để trống!")
     @Size(min = 6, max = 100, message = "Tên tài liệu phải có ít nhất 6, nhiều nhất 100 kí tự!")
     private String name;
+    private Long idService;
     @NotBlank(message = "Nội dung không được để trống!")
     @Size(max = 5000)
     private String content;
